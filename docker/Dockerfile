@@ -241,4 +241,8 @@ ENV MS365_MCP_USE_KEYTAR=0
 
 EXPOSE 8000
 
-# Keep the authenticated ASGI gate as the image entrypoint. Railway Start Command overrides\n# are passed as extra argv rather than bypassing the signed request gate.\nENTRYPOINT ["python", "-u", "-m", "openexecutive.railway_entrypoint"]\nCMD []\nHEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 CMD curl -f http://127.0.0.1:8000/health || exit 1
+# Keep the authenticated ASGI gate as the image entrypoint. Railway Start Command overrides
+# are passed as extra argv rather than bypassing the signed request gate.
+ENTRYPOINT ["python", "-u", "-m", "openexecutive.railway_entrypoint"]
+CMD []
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 CMD curl -f http://127.0.0.1:8000/health || exit 1
