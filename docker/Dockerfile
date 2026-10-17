@@ -241,4 +241,4 @@ ENV MS365_MCP_USE_KEYTAR=0
 
 EXPOSE 8000
 
-CMD ["uvicorn", "openexecutive.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-u", "-m", "openexecutive.railway_entrypoint"]
