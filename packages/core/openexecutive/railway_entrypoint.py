@@ -67,10 +67,14 @@ class SignedOpenExecutiveMcpGate:
             if len(raw_key) != 32:
                 raise RuntimeError("OPENEXECUTIVE_CALLER_PUBLIC_KEY must encode 32 Ed25519 public-key bytes")
             self.public_key = Ed25519PublicKey.from_public_bytes(raw_key)
-        if not self.shared_secret:
-            raise RuntimeError("BACKEND_SHARED_SECRET is required for the signed public MCP gateway")
-        if self.public_key is None:
-            raise RuntimeError("OPENEXECUTIVE_CALLER_PUBLIC_KEY is required for the signed public MCP gateway")
+        # Keep the health endpoint available when deployment secrets are absent or
+        # misconfigured; never take down the whole service for an auth config issue.
+        # The MCP route below fails closed with 503 until both values are present.
+        if not self.shared_secret or self.public_key is None:
+            logging.getLogger("openexecutive").error(
+                "Signed MCP gateway is not configured; /mcp will return 503 until "
+                "BACKEND_SHARED_SECRET and OPENEXECUTIVE_CALLER_PUBLIC_KEY are set"
+            )
         self.nonces = OrderedDict()
         self.nonce_lock = threading.Lock()
 
@@ -103,6 +107,9 @@ class SignedOpenExecutiveMcpGate:
             return
         if method != "POST" or scope.get("query_string"):
             await self.fail(send, 405, "method_not_allowed")
+            return
+        if not self.shared_secret or self.public_key is None:
+            await self.fail(send, 503, "signed_gateway_not_configured")
             return
 
         request_headers = {}
