@@ -103,6 +103,8 @@ class MarketingAttributionEvent(BaseModel):
                 raise ValueError("sale_confirmed requires a unique transaction_id")
             if self.sale_value_brl is None:
                 raise ValueError("sale_confirmed requires sale_value_brl")
+            if not self.evidence_ref:
+                raise ValueError("sale_confirmed requires an evidence_ref, such as a CRM/conversation record ID")
         elif self.event_type == "sale_candidate":
             if self.verification_status != "pending_review":
                 raise ValueError("sale_candidate requires verification_status='pending_review'")
