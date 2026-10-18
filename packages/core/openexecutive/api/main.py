@@ -38,6 +38,7 @@ from openexecutive.api.routes import (
     health,
     history,
     knowledge,
+    marketing_attribution,
     may_do,
     notifications,
     onboarding,
@@ -1007,6 +1008,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router, tags=["health"])
     app.include_router(version.router, tags=["health"])
     app.include_router(setup_status.router, tags=["setup"])
+    app.include_router(marketing_attribution.router, tags=["marketing-attribution"])
 
     # Expose Open Executive as an MCP server at /mcp (Streamable-HTTP). Gated
     # by the same shared-secret middleware as every other route — clients pass
