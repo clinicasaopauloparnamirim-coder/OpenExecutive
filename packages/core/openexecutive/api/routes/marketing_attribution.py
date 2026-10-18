@@ -78,7 +78,7 @@ async def ingest_event(
     return IngestResponse(
         event_id=write["event_id"],
         duplicate=write["duplicate"],
-        sale_recorded=event.event_type == "sale_confirmed" and event.verification_status == "verified",
+        sale_recorded=False,
     )
 
 
