@@ -73,7 +73,7 @@ class MarketingAttributionEvent(BaseModel):
     @field_validator("lead_key")
     @classmethod
     def _reject_raw_phone_numbers(cls, value: str) -> str:
-        if re.fullmatch(r"\\+?\\d{10,15}", value):
+        if re.fullmatch(r"\+?\d{10,15}", value):
             raise ValueError("lead_key must be a pseudonymous key, not a phone number")
         return value
 
