@@ -9,8 +9,8 @@ from typing import Any
 from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel, ValidationError
 
-from openexecutive.attribution.models import MarketingAttributionEvent
 from openexecutive.attribution import store
+from openexecutive.attribution.models import MarketingAttributionEvent
 
 router = APIRouter(prefix="/marketing-attribution", tags=["marketing-attribution"])
 _MAX_BODY_BYTES = 64 * 1024
