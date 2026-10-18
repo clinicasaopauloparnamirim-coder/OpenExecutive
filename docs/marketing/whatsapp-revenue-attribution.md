@@ -16,7 +16,8 @@ The feature set breaks into five separate capabilities:
 
 ## Routes added
 
-- POST /marketing-attribution/webhook — accepts a signed, schema-validated event.
+- POST /marketing-attribution/webhook — accepts signed, schema-validated lead/conversation/stage events; it explicitly refuses `sale_confirmed`.
+- POST /marketing-attribution/sales/confirm — accepts `sale_confirmed` only after the application's principal-proof gate, requiring a transaction ID, value, operator ID and evidence reference.
 - GET /marketing-attribution/summary — returns aggregate counts and verified revenue by source; it never returns lead identifiers or conversation text.
 
 In production, the OpenExecutive BACKEND_SHARED_SECRET gate must remain enabled. The webhook additionally requires ATTRIBUTION_WEBHOOK_SECRET and X-Attribution-Signature: sha256=<HMAC-SHA256 of the exact request body>. The HMAC secret must never be committed to GitHub.
@@ -27,7 +28,8 @@ In production, the OpenExecutive BACKEND_SHARED_SECRET gate must remain enabled.
 - Send only allowlisted attribution fields. Do not send names, raw phone numbers, dental conditions, treatment details, or WhatsApp message transcripts to this ledger.
 - Include a timezone in occurred_at.
 - Use a stable event_id for retries. Reusing it with different content returns HTTP 409.
-- Confirmed sales require verification_status=verified, an internal verified_by actor ID, unique transaction_id, and sale_value_brl.
+- Confirmed sales require verification_status=verified, an internal verified_by actor ID, unique transaction_id, sale_value_brl, and an evidence_ref.
+- External integration webhooks cannot mark a sale confirmed; confirmation must pass the app's authenticated principal-proof gate.
 - The same transaction_id cannot count as a second sale, even if a new event ID is used.
 - AI classifications are suggestions only; sale_candidate is not a sale.
 
@@ -90,6 +92,7 @@ Attribution is probabilistic when identifiers are missing. Direct/organic conver
 - [x] Idempotent duplicate delivery and 409 on event ID/content collision.
 - [x] Unique transaction ID for each confirmed sale.
 - [x] Revenue is counted only for explicitly verified sales.
+- [x] External signed webhooks cannot confirm revenue; a separate principal-gated route is required.
 - [x] Aggregate report shows events, leads, pending candidates, verified sales, and verified revenue by source.
 - [ ] Live provider webhook tested against the clinic's real WhatsApp/inbox integration.
 - [ ] Meta CAPI adapter implemented and validated with Test Events.
