@@ -131,7 +131,9 @@ def test_rejects_raw_phone_as_lead_key_and_extra_conversation_text(client: TestC
 def test_requires_timezone_for_event_time() -> None:
     from openexecutive.attribution.models import MarketingAttributionEvent
 
-    with pytest.raises(Exception):
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
         MarketingAttributionEvent.model_validate(_payload(occurred_at="2026-10-18T12:00:00"))
 
 
