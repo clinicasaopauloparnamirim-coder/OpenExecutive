@@ -70,7 +70,7 @@ The connected Composio Control Tower tools were executed. No mutation tool was c
 
 ## Refined root-cause evidence
 
-The current Worker source shows that the OAuth Durable Object reads a stored refresh token and posts it to Google's token endpoint. If Google's response is not successful, the Durable Object returns HTTP 502. The caller then reports `Google token refresh failed: 502`. This proves the failure occurs in the Google OAuth refresh path. It does not prove whether the stored token is revoked/expired, the client credentials mismatch, or another upstream OAuth error occurred, because the current error path does not expose the upstream error category.
+The current Worker source shows that the OAuth Durable Object reads a stored refresh token and posts it to Google's token endpoint. If no refresh token exists, the code returns HTTP 401. The observed HTTP 502 therefore points to the upstream token exchange failing (or returning no access token), not to a simple missing-token branch. The current error path discards Google's detailed OAuth error, so it does not prove whether the token was revoked/expired, the client credentials mismatch, or another upstream OAuth error occurred.
 
 The audit tool generated a time-limited Google authorization URL as a recovery path. It requires a human Google consent step. The URL's state is temporary and must not be saved in this report.
 
