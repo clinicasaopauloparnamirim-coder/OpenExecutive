@@ -55,3 +55,30 @@
 - Keep `jev-control-tower` on STANDBY.
 - Do not change production Worker code, DNS, secrets, OAuth state, or Google Ads campaigns until the canonical endpoint and failure are proven.
 - Continue with independent read-only checks. Record any blocked dependency and do not infer success from configuration alone.
+
+
+## Live read-only Control Tower checks (2026-10-24 UTC)
+
+The connected Composio Control Tower tools were executed. No mutation tool was called.
+
+- `CUSTOM_CONTROL_TOWER_HEALTH`: `ok=true`; auth configured; Composio and connected account configured; Google OAuth configured; NVIDIA Nemotron configured; Laya configured; Jev not configured; OpenExecutive configured/enabled but `runtimeVerified=false` and readiness `configured-unverified`.
+- `CUSTOM_CONTROL_TOWER_ADS_AUTH_CHECK`: PASS. Google Ads API returned customer `4603647788`; validation-only Data Manager request returned status 200 and `conversion_uploaded=false`.
+- `CUSTOM_CONTROL_TOWER_ADS_AUDIT`: PASS. Existing enabled Search campaign `SEARCH | PARNAMIRIM | ALTA INTENÇÃO` returned 1,361 impressions, 103 clicks, 8 conversions, and R$193.59 cost for the audit's returned period. This is read-only and does not imply campaign optimization is approved.
+- Conversion tracking finding: GA4 `generate_lead` is enabled but `primaryForGoal=false`. The WhatsApp click action is `primaryForGoal=true`. Record for review; do not change it in this diagnostic.
+- `CUSTOM_CONTROL_TOWER_GA4_AUDIT`: FAIL, `Google token refresh failed: 502`.
+- `CUSTOM_CONTROL_TOWER_GSC_AUDIT`: FAIL, `Google token refresh failed: 502`.
+
+## Refined root-cause evidence
+
+The current Worker source shows that the OAuth Durable Object reads a stored refresh token and posts it to Google's token endpoint. If Google's response is not successful, the Durable Object returns HTTP 502. The caller then reports `Google token refresh failed: 502`. This proves the failure occurs in the Google OAuth refresh path. It does not prove whether the stored token is revoked/expired, the client credentials mismatch, or another upstream OAuth error occurred, because the current error path does not expose the upstream error category.
+
+The audit tool generated a time-limited Google authorization URL as a recovery path. It requires a human Google consent step. The URL's state is temporary and must not be saved in this report.
+
+## Updated decision
+
+- **PASS:** Google Ads authentication and read-only account audit.
+- **FAIL:** GA4 and Search Console token refresh, both HTTP 502.
+- **FAIL / STANDBY:** Jev runtime. Health says `jev_configured=false`; the Worker named `jev-control-tower` is a Hello World placeholder.
+- **PENDING TEST:** OpenExecutive runtime. Configured/enabled, but no read-only consultation tool was available through the connected Control Tower tool set; runtime verification remains false.
+- **PENDING TEST:** Authenticated public MCP `tools/list` and a read-only tool call. Cloudflare source confirms the route exists and requires authorization, but a direct live HTTP request was not completed in this session.
+- **NO MUTATIONS:** No OAuth token replaced, no Worker changed, no campaign or conversion action changed, no budget changed.
